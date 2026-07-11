@@ -3,12 +3,12 @@ import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 
 export async function POST() {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
+// capture payment
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -17,7 +17,7 @@ export async function POST() {
     }
 
     const subscriptionEnds = new Date();
-    subscriptionEnds.setMonth(subscriptionEnds.getMonth() + 1);
+    subscriptionEnds.setMonth(subscriptionEnds.getMonth() + 1);//+1 mean ki next month
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -41,7 +41,7 @@ export async function POST() {
 }
 
 export async function GET() {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -61,7 +61,7 @@ export async function GET() {
     if (user.subscriptionEnds && user.subscriptionEnds < now) {
       await prisma.user.update({
         where: { id: userId },
-        data: { isSubscribed: false, subscriptionEnds: null },
+        data: { isSubscribed: false, subscriptionEnds: null},
       });
       return NextResponse.json({ isSubscribed: false, subscriptionEnds: null });
     }
